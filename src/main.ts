@@ -1,4 +1,4 @@
-import { Plugin } from "obsidian";
+import { MarkdownView, Plugin } from "obsidian";
 import { CommentPluginSettings, DEFAULT_SETTINGS } from "./types";
 import { CommentSettingTab } from "./settings";
 import { CommentSidebarView, VIEW_TYPE_COMMENTS } from "./sidebar-view";
@@ -18,6 +18,29 @@ export default class CommentPlugin extends Plugin {
     });
 
     registerReadingViewProcessor(this);
+
+    this.addCommand({
+      id: "add-comment",
+      name: "Add comment",
+      checkCallback: (checking: boolean) => {
+        const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+        if (!view) return false;
+        if (checking) return true;
+
+        // Ensure sidebar is open
+        this.activateSidebarView();
+
+        // In reading view, find the first visible block and simulate a comment button click
+        const previewEl = (view as any).previewMode?.containerEl;
+        if (previewEl) {
+          const btn = previewEl.querySelector(".comment-hover-btn") as HTMLElement | null;
+          if (btn) {
+            btn.click();
+          }
+        }
+        return true;
+      },
+    });
 
     console.log("Comments plugin loaded");
   }
