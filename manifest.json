@@ -1,0 +1,9 @@
+{
+  "id": "obsidian-comments",
+  "name": "Comments",
+  "version": "0.1.0",
+  "minAppVersion": "1.5.0",
+  "description": "Bi-directional markdown comments using footnotes. Add, view, and manage comments from reading view and sidebar.",
+  "author": "Lena",
+  "isDesktopOnly": false
+}
