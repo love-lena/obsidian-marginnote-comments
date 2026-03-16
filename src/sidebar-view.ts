@@ -164,6 +164,83 @@ export class CommentSidebarView extends ItemView {
   }
 
   async handleReply(thread: CommentThread, file: TFile): Promise<void> {
-    // Placeholder — will be implemented in Task 6
+    // Find the card container for this thread to insert input after it
+    const cards = this.containerEl.querySelectorAll(".comment-card");
+    const lastThreadCard = cards[
+      this.findLastCardIndexForThread(thread)
+    ];
+    if (!lastThreadCard) return;
+
+    // Don't add multiple inputs
+    if (lastThreadCard.parentElement?.querySelector(".comment-input-container")) return;
+
+    const inputContainer = createDiv({ cls: "comment-input-container" });
+
+    inputContainer.createDiv({
+      text: `New comment as ${this.plugin.settings.defaultAuthor}`,
+      cls: "comment-input-label",
+    });
+
+    const textarea = inputContainer.createEl("textarea", {
+      cls: "comment-input-textarea",
+      attr: { placeholder: "Write a reply...", rows: "2" },
+    });
+
+    const buttonRow = inputContainer.createDiv({ cls: "comment-input-buttons" });
+
+    const cancelBtn = buttonRow.createEl("button", {
+      text: "Cancel",
+      cls: "comment-input-cancel",
+    });
+    cancelBtn.addEventListener("click", () => inputContainer.remove());
+
+    const submitBtn = buttonRow.createEl("button", {
+      text: "Reply",
+      cls: "comment-input-submit",
+    });
+    submitBtn.addEventListener("click", async () => {
+      const body = textarea.value.trim();
+      if (!body) return;
+
+      const author = this.plugin.settings.defaultAuthor;
+      const quote = thread.comments[0]?.quote ?? null;
+      const lastMarker = thread.markers[thread.markers.length - 1]!;
+
+      await this.app.vault.process(file, (content) => {
+        const lines = content.split("\n");
+        // Find next available ID
+        const result = parseComments(content);
+        const newId = result.nextId;
+
+        // Insert marker adjacent to last marker in thread
+        const line = lines[lastMarker.markerLine]!;
+        const insertPos = lastMarker.markerOffset + `[^c${lastMarker.id}]`.length;
+        lines[lastMarker.markerLine] =
+          line.slice(0, insertPos) + `[^c${newId}]` + line.slice(insertPos);
+
+        // Append definition at end of file
+        const quotePart = quote ? `"${quote}" — ` : "";
+        const def = `[^c${newId}]: ${author} - ${quotePart}${body}`;
+        lines.push(def);
+
+        return lines.join("\n");
+      });
+
+      inputContainer.remove();
+    });
+
+    lastThreadCard.after(inputContainer);
+    textarea.focus();
+  }
+
+  private findLastCardIndexForThread(thread: CommentThread): number {
+    const allCards = Array.from(this.containerEl.querySelectorAll(".comment-card"));
+    const lastCommentId = thread.comments[thread.comments.length - 1]?.id;
+    for (let i = allCards.length - 1; i >= 0; i--) {
+      if (allCards[i]?.getAttribute("data-comment-id") === String(lastCommentId)) {
+        return i;
+      }
+    }
+    return 0;
   }
 }
