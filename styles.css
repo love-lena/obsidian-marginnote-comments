@@ -1,8 +1,90 @@
-/*
-
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
-
-If your plugin does not need CSS, delete this file.
-
-*/
+/* Sidebar */
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+.comment-header-title {
+  font-size: 13px;
+  font-weight: 600;
+}
+.comment-header-count {
+  font-size: 11px;
+  color: var(--text-muted);
+  background: var(--background-modifier-hover);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+.comment-empty {
+  padding: 16px;
+  color: var(--text-muted);
+  text-align: center;
+}
+.comment-card {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  cursor: pointer;
+  border-left: 3px solid transparent;
+  transition: background 0.1s, border-color 0.1s;
+}
+.comment-card:hover {
+  background: var(--background-modifier-hover);
+  border-left-color: var(--interactive-accent);
+}
+.comment-reply {
+  padding-left: 24px;
+  background: var(--background-secondary-alt);
+}
+.comment-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+.comment-author {
+  font-size: 11px;
+  font-weight: 600;
+}
+.comment-actions {
+  display: flex;
+  gap: 4px;
+}
+.comment-action {
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  border: 1px solid var(--background-modifier-border);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.comment-action-delete:hover {
+  border-color: var(--text-error);
+  color: var(--text-error);
+}
+.comment-action-reply:hover {
+  border-color: var(--interactive-accent);
+  color: var(--interactive-accent);
+}
+.comment-quote {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+  border-left: 2px solid var(--background-modifier-border);
+  padding-left: 8px;
+  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.comment-body {
+  font-size: 12px;
+  color: var(--text-normal);
+  line-height: 1.5;
+}
