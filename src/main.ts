@@ -2,6 +2,7 @@ import { Plugin } from "obsidian";
 import { CommentPluginSettings, DEFAULT_SETTINGS } from "./types";
 import { CommentSettingTab } from "./settings";
 import { CommentSidebarView, VIEW_TYPE_COMMENTS } from "./sidebar-view";
+import { registerReadingViewProcessor } from "./reading-view";
 
 export default class CommentPlugin extends Plugin {
   settings: CommentPluginSettings = DEFAULT_SETTINGS;
@@ -15,6 +16,8 @@ export default class CommentPlugin extends Plugin {
     this.addRibbonIcon("message-square", "Open comments", () => {
       this.activateSidebarView();
     });
+
+    registerReadingViewProcessor(this);
 
     console.log("Comments plugin loaded");
   }

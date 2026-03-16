@@ -139,3 +139,39 @@
   font-size: 12px;
   cursor: pointer;
 }
+
+/* Reading view hover button */
+.comment-hover-btn {
+  position: absolute;
+  right: -16px;
+  top: 4px;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid var(--background-modifier-border);
+  background: var(--background-secondary);
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s;
+  z-index: 10;
+}
+*:hover > .comment-hover-btn {
+  opacity: 1;
+}
+.comment-hover-btn:hover {
+  background: var(--background-modifier-hover);
+  border-color: var(--interactive-accent);
+}
+
+/* Inline comment input (in reading view) */
+.comment-inline-input {
+  margin-top: 8px;
+  padding: 10px;
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+}
