@@ -28,6 +28,16 @@ export function registerReadingViewProcessor(plugin: CommentPlugin): void {
       e.stopPropagation();
       openCommentInput(plugin, el, sectionInfo, file, ctx);
     });
+
+    // Check if this block has existing comment markers
+    const blockLines = sectionInfo.text
+      .split("\n")
+      .slice(sectionInfo.lineStart, sectionInfo.lineEnd + 1)
+      .join("\n");
+
+    if (/\[\^c\d+\]/.test(blockLines)) {
+      el.classList.add("comment-has-comments");
+    }
   });
 }
 
