@@ -20,6 +20,14 @@ export default class CommentPlugin extends Plugin {
     registerReadingViewProcessor(this);
 
     this.addCommand({
+      id: "show-comments-pane",
+      name: "Show comments pane",
+      callback: () => {
+        this.activateSidebarView();
+      },
+    });
+
+    this.addCommand({
       id: "add-comment",
       name: "Add comment",
       checkCallback: (checking: boolean) => {
@@ -40,6 +48,13 @@ export default class CommentPlugin extends Plugin {
         }
         return true;
       },
+    });
+
+    // Restore sidebar if it was open in a previous session
+    this.app.workspace.onLayoutReady(() => {
+      if (this.app.workspace.getLeavesOfType(VIEW_TYPE_COMMENTS).length === 0) {
+        this.activateSidebarView();
+      }
     });
 
     console.log("Comments plugin loaded");
