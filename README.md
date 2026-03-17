@@ -22,7 +22,7 @@ This paragraph has a comment.[^c1]
 - **Settings** — default author, sidebar position, per-author colors
 - **Commands** — "Show comments pane" and "Add comment" in the command palette
 
-## Install
+## Install from release
 
 1. Download `main.js`, `styles.css`, and `manifest.json` from the [latest release](https://github.com/love-lena/obsidian-marginnote-comments/releases)
 2. Create the plugin folder in your vault:
@@ -32,7 +32,26 @@ This paragraph has a comment.[^c1]
 3. Copy the three files into that folder
 4. Open Obsidian → Settings → Community plugins → Enable "MarginNote Comments"
 
-**Optional — AI agent skill:** If you use Claude Code or another AI coding agent, install the comment skill so it knows how to read and write comments:
+## Install from source
+
+```bash
+git clone https://github.com/love-lena/obsidian-marginnote-comments.git
+cd obsidian-marginnote-comments
+npm install
+npm run build
+```
+
+Then symlink into your vault:
+
+```bash
+ln -s "$(pwd)" <vault>/.obsidian/plugins/obsidian-marginnote-comments
+```
+
+Enable the plugin in Obsidian → Settings → Community plugins.
+
+## AI agent skill (optional)
+
+This plugin ships a [`comments.skill.md`](comments.skill.md) that teaches AI agents how to read and write comments in the correct format. To install it for Claude Code:
 
 ```bash
 mkdir -p <vault>/.claude/skills/comments
@@ -47,4 +66,5 @@ npm install
 npm run dev    # watch mode
 npm run build  # production build
 npm test       # run parser tests
+npm run lint   # type-check
 ```
