@@ -1,6 +1,6 @@
 {
-  "id": "obsidian-comments",
-  "name": "Comments",
+  "id": "obsidian-marginnote-comments",
+  "name": "MarginNote Comments",
   "version": "0.1.0",
   "minAppVersion": "1.5.0",
   "description": "Bi-directional markdown comments using footnotes. Add, view, and manage comments from reading view and sidebar.",

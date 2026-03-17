@@ -75,7 +75,7 @@ function openCommentInput(
     text: "Comment",
     cls: "comment-input-submit",
   });
-  submitBtn.addEventListener("click", async () => {
+  const submit = async () => {
     const body = textarea.value.trim();
     if (!body) return;
 
@@ -108,6 +108,14 @@ function openCommentInput(
     });
 
     container.remove();
+  };
+
+  submitBtn.addEventListener("click", submit);
+  textarea.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      submit();
+    }
   });
 
   textarea.focus();

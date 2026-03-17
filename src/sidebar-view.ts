@@ -7,6 +7,9 @@ export const VIEW_TYPE_COMMENTS = "comments-sidebar";
 
 export class CommentSidebarView extends ItemView {
   plugin: CommentPlugin;
+  private lastKnownFile: TFile | null = null;
+  private refreshTimeout: ReturnType<typeof setTimeout> | null = null;
+  private refreshGeneration = 0;
 
   constructor(leaf: WorkspaceLeaf, plugin: CommentPlugin) {
     super(leaf);
@@ -28,27 +31,42 @@ export class CommentSidebarView extends ItemView {
   async onOpen(): Promise<void> {
     this.registerEvent(
       this.app.vault.on("modify", (file) => {
-        if (file === this.getActiveFile()) this.refresh();
+        if (file === this.getActiveFile()) this.scheduleRefresh();
       })
     );
     this.registerEvent(
-      this.app.workspace.on("active-leaf-change", () => this.refresh())
+      this.app.workspace.on("active-leaf-change", () => this.scheduleRefresh())
     );
     this.refresh();
   }
 
+  private scheduleRefresh(): void {
+    if (this.refreshTimeout) clearTimeout(this.refreshTimeout);
+    this.refreshTimeout = setTimeout(() => this.refresh(), 100);
+  }
+
   getActiveFile(): TFile | null {
+    // Try active view first, but fall back to last known file
+    // (clicking the sidebar itself steals focus from the markdown view)
     const view = this.app.workspace.getActiveViewOfType(MarkdownView);
-    return view?.file ?? null;
+    if (view?.file) {
+      this.lastKnownFile = view.file;
+      return view.file;
+    }
+    return this.lastKnownFile;
   }
 
   async refresh(): Promise<void> {
-    const container = this.containerEl.children[1]!;
-    container.empty();
+    // Generation counter prevents stale async refreshes from rendering
+    const gen = ++this.refreshGeneration;
 
     const file = this.getActiveFile();
+
+    // Clear after getting file so we don't flash empty state
+    this.contentEl.empty();
+
     if (!file) {
-      container.createEl("p", {
+      this.contentEl.createEl("p", {
         text: "No active note",
         cls: "comment-empty",
       });
@@ -56,10 +74,14 @@ export class CommentSidebarView extends ItemView {
     }
 
     const content = await this.app.vault.read(file);
+
+    // If a newer refresh started while we were awaiting, bail out
+    if (gen !== this.refreshGeneration) return;
+
     const result = parseComments(content);
 
     // Header
-    const header = container.createDiv({ cls: "comment-header" });
+    const header = this.contentEl.createDiv({ cls: "comment-header" });
     header.createSpan({ text: "Comments", cls: "comment-header-title" });
     const count = result.definitions.length;
     header.createSpan({
@@ -68,7 +90,7 @@ export class CommentSidebarView extends ItemView {
     });
 
     if (result.threads.length === 0) {
-      container.createEl("p", {
+      this.contentEl.createEl("p", {
         text: "No comments in this note",
         cls: "comment-empty",
       });
@@ -77,7 +99,7 @@ export class CommentSidebarView extends ItemView {
 
     // Render threads
     for (const thread of result.threads) {
-      this.renderThread(container, thread, file);
+      this.renderThread(this.contentEl, thread, file);
     }
   }
 
@@ -107,14 +129,11 @@ export class CommentSidebarView extends ItemView {
       const authorColor = comment.author
         ? this.plugin.settings.authorColors[comment.author] ?? "#888"
         : "#888";
-      topRow.createSpan({
+      const authorSpan = topRow.createSpan({
         text: comment.author ?? "unknown",
         cls: "comment-author",
       });
-      topRow.querySelector(".comment-author")?.setAttribute(
-        "style",
-        `color: ${authorColor}`
-      );
+      authorSpan.style.color = authorColor;
 
       const actions = topRow.createDiv({ cls: "comment-actions" });
 
@@ -149,12 +168,16 @@ export class CommentSidebarView extends ItemView {
   }
 
   jumpToLine(file: TFile, line: number): void {
-    const leaf = this.app.workspace.getActiveViewOfType(MarkdownView)?.leaf;
+    // Find the leaf showing this file — can't use getActiveViewOfType because
+    // clicking the sidebar changes focus away from the markdown view
+    const leaves = this.app.workspace.getLeavesOfType("markdown");
+    const leaf = leaves.find(
+      (l) => l.view instanceof MarkdownView && l.view.file?.path === file.path
+    );
     if (!leaf) return;
-    const view = leaf.view;
-    if (view instanceof MarkdownView) {
-      view.setEphemeralState({ line });
-    }
+    const view = leaf.view as MarkdownView;
+    this.app.workspace.revealLeaf(leaf);
+    view.setEphemeralState({ line });
   }
 
   async handleDelete(commentId: number, file: TFile): Promise<void> {
@@ -164,8 +187,7 @@ export class CommentSidebarView extends ItemView {
   }
 
   async handleReply(thread: CommentThread, file: TFile): Promise<void> {
-    // Find the card container for this thread to insert input after it
-    const cards = this.containerEl.querySelectorAll(".comment-card");
+    const cards = this.contentEl.querySelectorAll(".comment-card");
     const lastThreadCard = cards[
       this.findLastCardIndexForThread(thread)
     ];
@@ -198,7 +220,8 @@ export class CommentSidebarView extends ItemView {
       text: "Reply",
       cls: "comment-input-submit",
     });
-    submitBtn.addEventListener("click", async () => {
+
+    const submit = async () => {
       const body = textarea.value.trim();
       if (!body) return;
 
@@ -208,17 +231,14 @@ export class CommentSidebarView extends ItemView {
 
       await this.app.vault.process(file, (content) => {
         const lines = content.split("\n");
-        // Find next available ID
         const result = parseComments(content);
         const newId = result.nextId;
 
-        // Insert marker adjacent to last marker in thread
         const line = lines[lastMarker.markerLine]!;
         const insertPos = lastMarker.markerOffset + `[^c${lastMarker.id}]`.length;
         lines[lastMarker.markerLine] =
           line.slice(0, insertPos) + `[^c${newId}]` + line.slice(insertPos);
 
-        // Append definition at end of file
         const quotePart = quote ? `"${quote}" — ` : "";
         const def = `[^c${newId}]: ${author} - ${quotePart}${body}`;
         lines.push(def);
@@ -227,6 +247,14 @@ export class CommentSidebarView extends ItemView {
       });
 
       inputContainer.remove();
+    };
+
+    submitBtn.addEventListener("click", submit);
+    textarea.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        submit();
+      }
     });
 
     lastThreadCard.after(inputContainer);
@@ -234,7 +262,7 @@ export class CommentSidebarView extends ItemView {
   }
 
   private findLastCardIndexForThread(thread: CommentThread): number {
-    const allCards = Array.from(this.containerEl.querySelectorAll(".comment-card"));
+    const allCards = Array.from(this.contentEl.querySelectorAll(".comment-card"));
     const lastCommentId = thread.comments[thread.comments.length - 1]?.id;
     for (let i = allCards.length - 1; i >= 0; i--) {
       if (allCards[i]?.getAttribute("data-comment-id") === String(lastCommentId)) {
