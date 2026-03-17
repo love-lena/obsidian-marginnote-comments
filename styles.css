@@ -175,3 +175,11 @@
   border: 1px solid var(--background-modifier-border);
   border-radius: 8px;
 }
+
+/* Blocks with existing comments */
+.comment-has-comments {
+  border-left: 3px solid var(--interactive-accent);
+  padding-left: 8px;
+  background: rgba(var(--interactive-accent-rgb), 0.05);
+  border-radius: 4px;
+}
