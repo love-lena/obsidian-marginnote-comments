@@ -1,30 +1,32 @@
-# MarginNote Comments — Agent Skill
+---
+name: writing-marginnote-comments
+description: Use when reading or editing markdown files that use the MarginNote Comments plugin, or when asked to leave inline comments, review feedback, or suggestions on a document
+---
 
-Use this skill to read and write inline comments in Obsidian markdown files. Comments are stored as footnotes with a `[^cN]` prefix and rendered by the MarginNote Comments plugin.
+# MarginNote Comments
 
-## Comment format
+## Overview
 
-A comment has two parts: an **inline marker** and a **definition**.
+Add inline comments to Obsidian markdown files using footnotes with a `[^cN]` prefix. Comments are rendered by the MarginNote Comments plugin in a sidebar panel.
 
-**Inline marker** — placed at the end of the paragraph being commented on:
+## When to Use
 
-```
-This paragraph needs work.[^c1]
-```
+- Leaving review feedback, suggestions, or questions on a markdown document
+- Replying to existing `[^cN]` comments in a file
+- Removing resolved comments
+- Any time you see `[^cN]` markers in a markdown file — this is the comment format
 
-**Definition** — placed at the bottom of the file:
+**When NOT to use:**
+- Regular footnotes (`[^1]`, `[^note]`) — those are content, not comments
+- Files that don't use this plugin — use whatever comment convention the project specifies
 
-```
-[^c1]: @me - "This paragraph needs work." — Can we add supporting evidence?
-```
+## Quick Reference
 
-### Definition format
+### Format
 
 ```
 [^cN]: @author - "quoted text" — comment body
 ```
-
-All parts except the comment body are optional:
 
 | Format | Example |
 |--------|---------|
@@ -33,43 +35,22 @@ All parts except the comment body are optional:
 | No author | `[^c1]: "paragraph text" — Your comment` |
 | Body only | `[^c1]: Your comment` |
 
-## How to add a comment
+### Adding a comment
 
-1. **Find the next available ID.** Scan the file for all `[^cN]` patterns. Pick the next integer after the highest N found. If no comments exist, start at 1.
+1. Scan file for all `[^cN]` — pick next integer after highest N (start at 1 if none)
+2. Append `[^cN]` to end of the paragraph's last line (no space before it)
+3. Append definition at end of file: `[^cN]: @yourname - "first ~50 chars" — Comment`
 
-2. **Add the inline marker.** Append `[^cN]` to the end of the last line of the paragraph you're commenting on. Do NOT put a space before it.
-
-3. **Add the definition.** Append a new line at the end of the file:
-   ```
-   [^cN]: @yourname - "first ~50 chars of paragraph" — Your comment here
-   ```
-
-### Example
-
-Before:
-```markdown
-The results were inconclusive.
-```
-
-After adding comment c1:
 ```markdown
 The results were inconclusive.[^c1]
 
 [^c1]: @claude - "The results were inconclusive." — Should we include the confidence intervals?
 ```
 
-## How to reply to a comment
+### Replying
 
-Replies are **adjacent markers** — place the new marker immediately after the last marker in the thread (no space between them).
+Place new marker immediately adjacent to the last marker (no space):
 
-Before:
-```markdown
-The results were inconclusive.[^c1]
-
-[^c1]: @me - "The results were inconclusive." — Add confidence intervals
-```
-
-After replying:
 ```markdown
 The results were inconclusive.[^c1][^c2]
 
@@ -77,15 +58,26 @@ The results were inconclusive.[^c1][^c2]
 [^c2]: @claude - "The results were inconclusive." — Done, added 95% CI to Table 2
 ```
 
-## How to delete a comment
+### Deleting
 
-1. Remove the `[^cN]` marker from the paragraph (do NOT remove surrounding text)
-2. Remove the entire `[^cN]: ...` definition line
+1. Remove `[^cN]` marker from the paragraph (keep surrounding text intact)
+2. Remove the `[^cN]: ...` definition line
 
 ## Rules
 
-- **Never modify regular footnotes.** Only touch `[^cN]` patterns (lowercase c followed by a number). Leave `[^1]`, `[^note]`, etc. untouched.
-- **IDs must be unique** within a file. Always scan for the highest existing ID first.
-- **No spaces between threaded markers.** `[^c1][^c2]` is a thread. `[^c1] [^c2]` is two separate comments.
+- **Never modify regular footnotes.** Only touch `[^cN]` (lowercase c + number). Leave `[^1]`, `[^note]`, etc. untouched.
+- **IDs must be unique** within a file. Always scan for highest existing ID first.
+- **No spaces between threaded markers.** `[^c1][^c2]` = thread. `[^c1] [^c2]` = two separate comments.
 - **Definitions go at the end of the file**, one per line.
 - **Don't renumber existing comments.** Other markers reference these IDs.
+
+## Common Mistakes
+
+| Mistake | Fix |
+|---------|-----|
+| Space before marker: `text. [^c1]` | No space: `text.[^c1]` |
+| Using regular footnote: `[^1]` | Use comment prefix: `[^c1]` |
+| Hardcoding ID without scanning | Always find max existing ID first |
+| Space between thread markers: `[^c1] [^c2]` | Adjacent: `[^c1][^c2]` |
+| Modifying a regular footnote `[^1]:` | Only touch `[^cN]:` definitions |
+| Putting definition mid-file | Definitions always at end of file |
