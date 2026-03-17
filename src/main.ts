@@ -35,16 +35,12 @@ export default class CommentPlugin extends Plugin {
         if (!view) return false;
         if (checking) return true;
 
-        // Ensure sidebar is open
         this.activateSidebarView();
 
-        // In reading view, find the first visible block and simulate a comment button click
-        const previewEl = (view as any).previewMode?.containerEl;
-        if (previewEl) {
-          const btn = previewEl.querySelector(".comment-hover-btn") as HTMLElement | null;
-          if (btn) {
-            btn.click();
-          }
+        // Find the first comment button in the rendered preview
+        const btn = view.containerEl.querySelector(".comment-hover-btn") as HTMLElement | null;
+        if (btn) {
+          btn.click();
         }
         return true;
       },
@@ -57,11 +53,9 @@ export default class CommentPlugin extends Plugin {
       }
     });
 
-    console.log("Comments plugin loaded");
   }
 
   onunload() {
-    console.log("Comments plugin unloaded");
   }
 
   async activateSidebarView(): Promise<void> {

@@ -28,6 +28,13 @@ export class CommentSidebarView extends ItemView {
     return "message-square";
   }
 
+  async onClose(): Promise<void> {
+    if (this.refreshTimeout) {
+      clearTimeout(this.refreshTimeout);
+      this.refreshTimeout = null;
+    }
+  }
+
   async onOpen(): Promise<void> {
     this.registerEvent(
       this.app.vault.on("modify", (file) => {

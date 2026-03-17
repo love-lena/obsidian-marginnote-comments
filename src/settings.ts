@@ -15,10 +15,10 @@ export class CommentSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName("Default author")
-      .setDesc("Pre-filled when adding comments (e.g. @lena)")
+      .setDesc("Pre-filled when adding comments (e.g. @me)")
       .addText((text) =>
         text
-          .setPlaceholder("@lena")
+          .setPlaceholder("@me")
           .setValue(this.plugin.settings.defaultAuthor)
           .onChange(async (value) => {
             this.plugin.settings.defaultAuthor = value;

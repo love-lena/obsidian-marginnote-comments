@@ -45,10 +45,10 @@ export interface CommentPluginSettings {
 }
 
 export const DEFAULT_SETTINGS: CommentPluginSettings = {
-  defaultAuthor: "@lena",
+  defaultAuthor: "@me",
   sidebarPosition: "right",
   authorColors: {
-    "@lena": "#4ecdc4",
+    "@me": "#4ecdc4",
     "@claude": "#7b6fde",
   },
 };
