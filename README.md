@@ -26,6 +26,10 @@ This paragraph has a comment.[^c1]
 
 Copy `main.js`, `styles.css`, and `manifest.json` to your vault at `.obsidian/plugins/obsidian-marginnote-comments/`.
 
+## AI agent integration
+
+This plugin ships a [`comments.skill.md`](comments.skill.md) file that teaches AI agents how to read and write comments in the correct format. To use it, reference or copy the skill file into your agent's context (e.g., add a pointer in your vault's `CLAUDE.md`).
+
 ## Development
 
 ```bash
