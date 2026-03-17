@@ -124,6 +124,33 @@ export function parseComments(content: string): ParseResult {
  * Removes both the inline [^cN] marker and the [^cN]: definition line.
  * Does NOT touch regular footnotes or surrounding text.
  */
+/**
+ * Remove orphaned comment markers — inline [^cN] markers with no matching definition.
+ * Does NOT touch regular footnotes or markers that have definitions.
+ */
+export function removeOrphanedMarkers(content: string): string {
+  const definitions = parseDefinitions(content);
+  const definedIds = new Set(definitions.map((d) => d.id));
+  const markers = parseMarkers(content);
+
+  // Remove markers that have no matching definition, highest ID first
+  // to avoid offset shifts breaking earlier replacements
+  const orphaned = markers.filter((m) => !definedIds.has(m.id));
+  if (orphaned.length === 0) return content;
+
+  for (const marker of orphaned.reverse()) {
+    const tag = `[^c${marker.id}]`;
+    const lines = content.split("\n");
+    const line = lines[marker.markerLine]!;
+    const before = line.slice(0, marker.markerOffset);
+    const after = line.slice(marker.markerOffset + tag.length);
+    lines[marker.markerLine] = before + after;
+    content = lines.join("\n");
+  }
+
+  return content;
+}
+
 export function removeComment(content: string, commentId: number): string {
   // Remove inline marker [^cN] — but NOT definition lines [^cN]:
   const markerRe = new RegExp(`\\[\\^c${commentId}\\](?!:)`, "g");

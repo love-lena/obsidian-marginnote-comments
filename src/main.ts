@@ -1,8 +1,9 @@
-import { MarkdownView, Plugin } from "obsidian";
+import { MarkdownView, Notice, Plugin } from "obsidian";
 import { CommentPluginSettings, DEFAULT_SETTINGS } from "./types";
 import { CommentSettingTab } from "./settings";
 import { CommentSidebarView, VIEW_TYPE_COMMENTS } from "./sidebar-view";
 import { registerReadingViewProcessor } from "./reading-view";
+import { removeOrphanedMarkers } from "./parser";
 
 export default class CommentPlugin extends Plugin {
   settings: CommentPluginSettings = DEFAULT_SETTINGS;
@@ -28,20 +29,23 @@ export default class CommentPlugin extends Plugin {
     });
 
     this.addCommand({
-      id: "add-comment",
-      name: "Add comment",
+      id: "cleanup-orphaned-markers",
+      name: "Clean up orphaned comment markers",
       checkCallback: (checking: boolean) => {
         const view = this.app.workspace.getActiveViewOfType(MarkdownView);
-        if (!view) return false;
+        if (!view?.file) return false;
         if (checking) return true;
 
-        this.activateSidebarView();
-
-        // Find the first comment button in the rendered preview
-        const btn = view.containerEl.querySelector(".comment-hover-btn") as HTMLElement | null;
-        if (btn) {
-          btn.click();
-        }
+        const file = view.file;
+        this.app.vault.process(file, (content) => {
+          const cleaned = removeOrphanedMarkers(content);
+          if (cleaned !== content) {
+            new Notice("Removed orphaned comment markers");
+          } else {
+            new Notice("No orphaned markers found");
+          }
+          return cleaned;
+        });
         return true;
       },
     });

@@ -69,7 +69,9 @@ export class CommentSidebarView extends ItemView {
 
     const file = this.getActiveFile();
 
-    // Clear after getting file so we don't flash empty state
+    // Save scroll position before clearing
+    const scrollTop = this.contentEl.scrollTop;
+
     this.contentEl.empty();
 
     if (!file) {
@@ -108,6 +110,9 @@ export class CommentSidebarView extends ItemView {
     for (const thread of result.threads) {
       this.renderThread(this.contentEl, thread, file);
     }
+
+    // Restore scroll position
+    this.contentEl.scrollTop = scrollTop;
   }
 
   renderThread(
@@ -115,11 +120,13 @@ export class CommentSidebarView extends ItemView {
     thread: CommentThread,
     file: TFile
   ): void {
+    const threadContainer = container.createDiv({ cls: "comment-thread" });
+
     for (let i = 0; i < thread.comments.length; i++) {
       const comment = thread.comments[i]!;
       const isReply = i > 0;
 
-      const card = container.createDiv({
+      const card = threadContainer.createDiv({
         cls: `comment-card ${isReply ? "comment-reply" : ""}`,
         attr: { "data-comment-id": String(comment.id) },
       });
