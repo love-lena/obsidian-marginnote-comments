@@ -14,7 +14,18 @@ export function parseDefinitions(content: string): CommentDefinition[] {
     if (!match) continue;
 
     const id = parseInt(match[1]!, 10);
-    const rest = match[2]!.trim();
+
+    // Collect continuation lines: any following line that isn't blank,
+    // isn't a new definition [^cN]:, and isn't a new footnote [^N]:
+    let fullText = match[2]!;
+    while (i + 1 < lines.length) {
+      const nextLine = lines[i + 1]!;
+      if (nextLine.trim() === "" || /^\[\^/.test(nextLine)) break;
+      i++;
+      fullText += " " + nextLine.trim();
+    }
+
+    const rest = fullText.trim();
 
     let author: string | null = null;
     let quote: string | null = null;
@@ -155,8 +166,20 @@ export function removeComment(content: string, commentId: number): string {
   // Remove inline marker [^cN] — but NOT definition lines [^cN]:
   const markerRe = new RegExp(`\\[\\^c${commentId}\\](?!:)`, "g");
   content = content.replace(markerRe, "");
-  // Remove definition line (and its trailing newline if present)
-  const defRe = new RegExp(`^\\[\\^c${commentId}\\]:.*\\n?`, "m");
-  content = content.replace(defRe, "");
-  return content;
+  // Remove definition line and any continuation lines (indented)
+  const lines = content.split("\n");
+  const result: string[] = [];
+  let skipping = false;
+  for (const line of lines) {
+    if (new RegExp(`^\\[\\^c${commentId}\\]:`).test(line)) {
+      skipping = true;
+      continue;
+    }
+    if (skipping && line.trim() !== "" && !/^\[\^/.test(line)) {
+      continue; // skip continuation line
+    }
+    skipping = false;
+    result.push(line);
+  }
+  return result.join("\n");
 }

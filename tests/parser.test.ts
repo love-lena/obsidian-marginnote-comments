@@ -63,6 +63,42 @@ describe("parseDefinitions", () => {
     const defs = parseDefinitions(content);
     expect(defs).toHaveLength(2);
   });
+
+  it("parses multi-line definitions with unindented continuation", () => {
+    const content = [
+      "[^c20]: @me - important point missing:",
+      "the goal is to allow pinned content ids exactly as they are now.",
+    ].join("\n");
+    const defs = parseDefinitions(content);
+    expect(defs).toHaveLength(1);
+    expect(defs[0]!.body).toContain("important point missing:");
+    expect(defs[0]!.body).toContain("the goal is to allow pinned content ids");
+  });
+
+  it("parses multi-line definitions with indented continuation", () => {
+    const content = [
+      "[^c1]: @me - first comment",
+      "    continuation line",
+      "[^c2]: @claude - second comment",
+    ].join("\n");
+    const defs = parseDefinitions(content);
+    expect(defs).toHaveLength(2);
+    expect(defs[0]!.body).toContain("continuation line");
+    expect(defs[1]!.body).toBe("second comment");
+  });
+
+  it("multi-line definition stops at blank line", () => {
+    const content = [
+      "[^c1]: @me - first comment",
+      "continuation",
+      "",
+      "[^c2]: @claude - second comment",
+    ].join("\n");
+    const defs = parseDefinitions(content);
+    expect(defs).toHaveLength(2);
+    expect(defs[0]!.body).toContain("continuation");
+    expect(defs[1]!.body).toBe("second comment");
+  });
 });
 
 describe("parseMarkers", () => {
