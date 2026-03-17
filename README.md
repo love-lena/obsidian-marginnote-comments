@@ -24,11 +24,21 @@ This paragraph has a comment.[^c1]
 
 ## Install
 
-Copy `main.js`, `styles.css`, and `manifest.json` to your vault at `.obsidian/plugins/obsidian-marginnote-comments/`.
+1. Download `main.js`, `styles.css`, and `manifest.json` from the [latest release](https://github.com/love-lena/obsidian-marginnote-comments/releases)
+2. Create the plugin folder in your vault:
+   ```bash
+   mkdir -p <vault>/.obsidian/plugins/obsidian-marginnote-comments
+   ```
+3. Copy the three files into that folder
+4. Open Obsidian → Settings → Community plugins → Enable "MarginNote Comments"
 
-## AI agent integration
+**Optional — AI agent skill:** If you use Claude Code or another AI coding agent, install the comment skill so it knows how to read and write comments:
 
-This plugin ships a [`comments.skill.md`](comments.skill.md) file that teaches AI agents how to read and write comments in the correct format. To use it, reference or copy the skill file into your agent's context (e.g., add a pointer in your vault's `CLAUDE.md`).
+```bash
+mkdir -p <vault>/.claude/skills/comments
+curl -o <vault>/.claude/skills/comments/SKILL.md \
+  https://raw.githubusercontent.com/love-lena/obsidian-marginnote-comments/main/comments.skill.md
+```
 
 ## Development
 
